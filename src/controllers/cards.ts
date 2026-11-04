@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import Card, { type ICard } from '../models/card';
 import type { AuthenticatedRequest } from '../types/request';
-import ErrorHandler from '../errors/errors';
+import ApiError from '../errors/errors';
 
 export function createCard(req: Request, res: Response, next: NextFunction) {
   const { name, link }: ICard = req.body;
@@ -11,9 +11,9 @@ export function createCard(req: Request, res: Response, next: NextFunction) {
     link,
     owner: (req as AuthenticatedRequest).user._id,
   })
-    .then((card) => res.send(card))
+    .then((card) => res.status(201).send(card))
     .catch((err) => {
-      const error = ErrorHandler.from(
+      const error = ApiError.from(
         err,
         'Переданы некорректные данные при создании карточки',
       );
@@ -26,7 +26,7 @@ export function getAllCards(_req: Request, res: Response, next: NextFunction) {
   return Card.find()
     .then((card) => res.send(card))
     .catch(() => {
-      const error = new ErrorHandler();
+      const error = new ApiError();
       return next(error);
     });
 }
@@ -35,7 +35,7 @@ export function deleteCard(req: Request, res: Response, next: NextFunction) {
   return Card.findByIdAndDelete(req.params.cardId)
     .then((card) => {
       if (!card) {
-        throw new ErrorHandler(
+        throw new ApiError(
           'Карточка с указанным _id не найдена',
           'NotFound',
         );
@@ -44,7 +44,7 @@ export function deleteCard(req: Request, res: Response, next: NextFunction) {
       return res.send({ message: `Карточка ${card.name} - удалена` });
     })
     .catch((err) => {
-      const error = ErrorHandler.from(err, 'Передан некорректный _id карточки');
+      const error = ApiError.from(err, 'Передан некорректный _id карточки');
 
       return next(error);
     });
@@ -60,7 +60,7 @@ export function likeCard(req: Request, res: Response, next: NextFunction) {
   )
     .then((card) => {
       if (!card) {
-        throw new ErrorHandler(
+        throw new ApiError(
           'Передан несуществующий _id карточки',
           'NotFound',
         );
@@ -69,7 +69,7 @@ export function likeCard(req: Request, res: Response, next: NextFunction) {
       return res.send({ message: 'like' });
     })
     .catch((err) => {
-      const error = ErrorHandler.from(
+      const error = ApiError.from(
         err,
         'Переданы некорректные данные для постановки лайка',
       );
@@ -86,7 +86,7 @@ export function dislikeCard(req: Request, res: Response, next: NextFunction) {
   )
     .then((card) => {
       if (!card) {
-        throw new ErrorHandler(
+        throw new ApiError(
           'Передан несуществующий _id карточки',
           'NotFound',
         );
@@ -95,7 +95,7 @@ export function dislikeCard(req: Request, res: Response, next: NextFunction) {
       return res.send({ message: 'dislike' });
     })
     .catch((err) => {
-      const error = ErrorHandler.from(
+      const error = ApiError.from(
         err,
         'Переданы некорректные данные для снятии лайка',
       );

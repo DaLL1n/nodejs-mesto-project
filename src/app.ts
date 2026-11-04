@@ -1,10 +1,9 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import type { NextFunction, Request, Response } from 'express';
-import cardRouter from './routes/cards';
-import userRouter from './routes/users';
+import router from './routes';
 import type { AuthenticatedRequest } from './types/request';
-import ErrorHandler from './errors/errors';
+import ApiError from './errors/errors';
 
 const app = express();
 mongoose.connect('mongodb://localhost:27017/mestodb');
@@ -19,17 +18,16 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   next();
 });
 
-app.use('/', userRouter);
-app.use('/', cardRouter);
+app.use('/', router);
 
 app.use((_req: Request, _res: Response, next: NextFunction) => {
-  const error = new ErrorHandler('Маршрут не найден', 'NotFound');
+  const error = new ApiError('Маршрут не найден', 'NotFound');
 
   return next(error);
 });
 
 app.use(
-  (err: ErrorHandler, _req: Request, res: Response, _next: NextFunction) => {
+  (err: ApiError, _req: Request, res: Response, _next: NextFunction) => {
     res.status(err.statusCode).send({ message: err.message });
   },
 );

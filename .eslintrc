@@ -3,7 +3,7 @@
     "es2021": true,
     "node": true
   },
-  "extends": ["airbnb-base", "prettier"],
+  "extends": ["airbnb-base"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",
@@ -20,7 +20,7 @@
   },
   "rules": {
     "no-unused-vars": "off",
-    "no-underscore-dangle": "off",
+    "no-underscore-dangle": ["error", { "allow": ["_id"] }],
     "quotes": ["error", "single", { "avoidEscape": true }],
     "import/extensions": [
       "error",
