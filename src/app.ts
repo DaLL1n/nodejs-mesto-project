@@ -1,35 +1,41 @@
+import cookieParser from 'cookie-parser';
+import type { NextFunction, Request, Response } from 'express';
 import express from 'express';
 import mongoose from 'mongoose';
-import type { NextFunction, Request, Response } from 'express';
-import router from './routes';
-import type { AuthenticatedRequest } from './types/request';
+import { userControllers } from './controllers';
 import ApiError from './errors/errors';
+import {
+  auth,
+  errorHandler,
+  logger,
+  validation,
+} from './middlewares';
+import router from './routes';
+import type { } from './types/express';
 
 const app = express();
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
+app.use(logger.requestLogger);
+
 app.use(express.json());
+app.use(cookieParser());
 
-app.use((req: Request, _res: Response, next: NextFunction) => {
-  (req as AuthenticatedRequest).user = {
-    _id: '6ae9eebdebc67517bc66643e',
-  };
+app.post('/signin', validation.validateLogin, userControllers.login);
+app.post('/signup', validation.validateCreateUser, userControllers.createUser);
 
-  next();
-});
+app.use('/', auth, router);
 
-app.use('/', router);
-
-app.use((_req: Request, _res: Response, next: NextFunction) => {
-  const error = new ApiError('Маршрут не найден', 'NotFound');
-
-  return next(error);
-});
+app.use(logger.errorLogger);
 
 app.use(
-  (err: ApiError, _req: Request, res: Response, _next: NextFunction) => {
-    res.status(err.statusCode).send({ message: err.message });
+  (_req: Request, _res: Response, next: NextFunction) => {
+    const error = new ApiError('Маршрут не найден', 'NotFound');
+
+    return next(error);
   },
 );
+
+app.use(errorHandler);
 
 app.listen(3000);

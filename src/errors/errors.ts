@@ -1,10 +1,18 @@
 const errorStatusCode = {
   NOT_FOUND: 404,
   BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  CONFLICT: 409,
   SERVER_ERROR: 500,
 } as const;
 
-type ErrorName = 'CastError' | 'ValidationError' | 'NotFound' | 'ServerError';
+type ErrorName =
+  | 'CastError'
+  | 'ValidationError'
+  | 'NotFound'
+  | 'Unauthorized'
+  | 'Conflict'
+  | 'ServerError';
 
 export default class ApiError extends Error {
   statusCode: number;
@@ -60,6 +68,14 @@ export default class ApiError extends Error {
   private static getStatusCode(errorName: ErrorName): number {
     if (errorName === 'NotFound') {
       return errorStatusCode.NOT_FOUND;
+    }
+
+    if (errorName === 'Unauthorized') {
+      return errorStatusCode.UNAUTHORIZED;
+    }
+
+    if (errorName === 'Conflict') {
+      return errorStatusCode.CONFLICT;
     }
 
     if (errorName === 'CastError' || errorName === 'ValidationError') {

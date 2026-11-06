@@ -1,7 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
-import Card, { type ICard } from '../models/card';
-import type { AuthenticatedRequest } from '../types/request';
 import ApiError from '../errors/errors';
+import Card, { type ICard } from '../models/card';
 
 export function createCard(req: Request, res: Response, next: NextFunction) {
   const { name, link }: ICard = req.body;
@@ -9,14 +8,11 @@ export function createCard(req: Request, res: Response, next: NextFunction) {
   return Card.create({
     name,
     link,
-    owner: (req as AuthenticatedRequest).user._id,
+    owner: req.user._id,
   })
     .then((card) => res.status(201).send(card))
     .catch((err) => {
-      const error = ApiError.from(
-        err,
-        'Переданы некорректные данные при создании карточки',
-      );
+      const error = ApiError.from(err);
 
       return next(error);
     });
@@ -25,14 +21,14 @@ export function createCard(req: Request, res: Response, next: NextFunction) {
 export function getAllCards(_req: Request, res: Response, next: NextFunction) {
   return Card.find()
     .then((card) => res.send(card))
-    .catch(() => {
-      const error = new ApiError();
+    .catch((err) => {
+      const error = ApiError.from(err);
       return next(error);
     });
 }
 
 export function deleteCard(req: Request, res: Response, next: NextFunction) {
-  return Card.findByIdAndDelete(req.params.cardId)
+  return Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
         throw new ApiError(
@@ -41,10 +37,14 @@ export function deleteCard(req: Request, res: Response, next: NextFunction) {
         );
       }
 
-      return res.send({ message: `Карточка ${card.name} - удалена` });
+      if (card.owner.toString() !== req.user._id) {
+        throw new ApiError('Карточка принадлежит другому пользователю', 'Unauthorized');
+      }
+
+      return card.deleteOne().then(() => res.send(card));
     })
     .catch((err) => {
-      const error = ApiError.from(err, 'Передан некорректный _id карточки');
+      const error = ApiError.from(err);
 
       return next(error);
     });
@@ -54,7 +54,7 @@ export function likeCard(req: Request, res: Response, next: NextFunction) {
   return Card.findByIdAndUpdate(
     req.params.cardId,
     {
-      $addToSet: { likes: (req as AuthenticatedRequest).user._id },
+      $addToSet: { likes: req.user._id },
     },
     { new: true },
   )
@@ -66,13 +66,10 @@ export function likeCard(req: Request, res: Response, next: NextFunction) {
         );
       }
 
-      return res.send({ message: 'like' });
+      return res.send(card);
     })
     .catch((err) => {
-      const error = ApiError.from(
-        err,
-        'Переданы некорректные данные для постановки лайка',
-      );
+      const error = ApiError.from(err);
 
       return next(error);
     });
@@ -81,7 +78,7 @@ export function likeCard(req: Request, res: Response, next: NextFunction) {
 export function dislikeCard(req: Request, res: Response, next: NextFunction) {
   return Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: (req as AuthenticatedRequest).user._id } },
+    { $pull: { likes: req.user._id } },
     { new: true },
   )
     .then((card) => {
@@ -92,13 +89,10 @@ export function dislikeCard(req: Request, res: Response, next: NextFunction) {
         );
       }
 
-      return res.send({ message: 'dislike' });
+      return res.send(card);
     })
     .catch((err) => {
-      const error = ApiError.from(
-        err,
-        'Переданы некорректные данные для снятии лайка',
-      );
+      const error = ApiError.from(err);
 
       return next(error);
     });
