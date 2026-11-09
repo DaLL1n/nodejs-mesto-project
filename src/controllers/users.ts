@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import { AUTH_COOKIE_NAME, SECRET_KEY } from '../config';
 import ApiError from '../errors/errors';
 import User, { type IUser } from '../models/user';
 
@@ -88,12 +89,12 @@ export function login(req: Request, res: Response, next: NextFunction) {
 
     const token = jwt.sign(
       { _id: user._id },
-      'auth-token',
+      SECRET_KEY,
       { expiresIn: '7d' },
     );
 
     return res.cookie(
-      'auth-token',
+      AUTH_COOKIE_NAME,
       token,
       { httpOnly: true, sameSite: true },
     ).end();

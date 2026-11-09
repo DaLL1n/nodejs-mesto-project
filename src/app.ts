@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import type { NextFunction, Request, Response } from 'express';
 import express from 'express';
@@ -9,6 +10,8 @@ import {
 } from './middlewares';
 import router from './routes';
 import type { } from './types/express';
+
+dotenv.config();
 
 const app = express();
 
