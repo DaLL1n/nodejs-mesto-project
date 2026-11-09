@@ -4,13 +4,17 @@ import winston from 'winston';
 const requestLogger = expressWinston.logger({
   level: 'info',
   transports: [
-    new winston.transports.Console({ format: winston.format.simple() }),
-    new winston.transports.File({ filename: 'logs/request.log' }),
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple(),
+      ),
+    }),
+    new winston.transports.File({
+      filename: 'logs/request.log',
+      format: winston.format.json(),
+    }),
   ],
-  format: winston.format.combine(
-    winston.format.colorize(),
-    winston.format.json(),
-  ),
 });
 
 const errorLogger = expressWinston.errorLogger({

@@ -77,7 +77,7 @@ export function login(req: Request, res: Response, next: NextFunction) {
 
   return User.findOne({ email }).select('+password').then((user) => {
     if (!user) {
-      throw new ApiError('Пользователь с такой почтой не найден', 'Unauthorized');
+      throw new ApiError('Неправильные пароль или почта', 'Unauthorized');
     }
 
     return bcrypt.compare(password, user.password).then((matched) => ({ matched, user }));

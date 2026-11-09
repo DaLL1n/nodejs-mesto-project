@@ -38,7 +38,7 @@ export function deleteCard(req: Request, res: Response, next: NextFunction) {
       }
 
       if (card.owner.toString() !== req.user._id) {
-        throw new ApiError('Карточка принадлежит другому пользователю', 'Unauthorized');
+        throw new ApiError('Карточка принадлежит другому пользователю', 'Forbidden');
       }
 
       return card.deleteOne().then(() => res.send(card));

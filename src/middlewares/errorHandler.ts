@@ -1,18 +1,10 @@
 import { isCelebrateError } from 'celebrate';
-import {
+import type {
   ErrorRequestHandler,
-  NextFunction,
-  Request,
-  Response,
 } from 'express';
 import ApiError from '../errors/errors';
 
-export default function errorHandler(
-  err: ErrorRequestHandler,
-  _req: Request,
-  res: Response,
-  _next: NextFunction,
-) {
+const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (isCelebrateError(err)) {
     const [validationError] = err.details.values();
 
@@ -21,4 +13,6 @@ export default function errorHandler(
   }
   const error = ApiError.from(err);
   return res.status(error.statusCode).send({ message: error.message });
-}
+};
+
+export default errorHandler;

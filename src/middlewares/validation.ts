@@ -57,13 +57,15 @@ export const validateUserId = celebrate({
 
 // #region Card validate
 
-export const validateCardId = celebrate({
+const createCardIdValidation = (message: string) => celebrate({
   [Segments.PARAMS]: Joi.object({
     cardId: objectId,
-  }).messages({
-    '*': 'Передан некорректный _id карточки',
-  }),
+  }).messages({ '*': message }),
 });
+
+export const validateCardId = createCardIdValidation(
+  'Передан некорректный _id карточки',
+);
 
 export const validateCreateCard = celebrate({
   [Segments.BODY]: Joi.object({
@@ -74,20 +76,12 @@ export const validateCreateCard = celebrate({
   }),
 });
 
-export const validateLikeCard = celebrate({
-  [Segments.PARAMS]: Joi.object({
-    cardId: objectId,
-  }).messages({
-    '*': 'Переданы некорректные данные для постановки лайка',
-  }),
-});
+export const validateLikeCard = createCardIdValidation(
+  'Переданы некорректные данные для постановки лайка',
+);
 
-export const validateDislikeCard = celebrate({
-  [Segments.PARAMS]: Joi.object({
-    cardId: objectId,
-  }).messages({
-    '*': 'Переданы некорректные данные для снятия лайка',
-  }),
-});
+export const validateDislikeCard = createCardIdValidation(
+  'Переданы некорректные данные для снятия лайка',
+);
 
 // #endregion

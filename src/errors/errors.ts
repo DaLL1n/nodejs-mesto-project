@@ -2,6 +2,7 @@ const errorStatusCode = {
   NOT_FOUND: 404,
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
   CONFLICT: 409,
   SERVER_ERROR: 500,
 } as const;
@@ -11,6 +12,7 @@ type ErrorName =
   | 'ValidationError'
   | 'NotFound'
   | 'Unauthorized'
+  | 'Forbidden'
   | 'Conflict'
   | 'ServerError';
 
@@ -72,6 +74,10 @@ export default class ApiError extends Error {
 
     if (errorName === 'Unauthorized') {
       return errorStatusCode.UNAUTHORIZED;
+    }
+
+    if (errorName === 'Forbidden') {
+      return errorStatusCode.FORBIDDEN;
     }
 
     if (errorName === 'Conflict') {
